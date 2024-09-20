@@ -70,23 +70,24 @@ class AES256KeyExpansion:
             for i, round_key in enumerate(self.round_keys):
                 f.write(f"Round {i}: {''.join([f'{byte:02x}' for byte in round_key])}\n")
                 
-    def convert_key_from_string(key_string):
+    def convert_key_from_ascii_string(key_string):
         """
-        Converts a hexadecimal string AES key into an array of integers (byte values).
-        Example input: "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
-        Output: [0x00, 0x11, 0x22, ..., 0xFF]
+        Converts an ASCII string AES key into an array of integers (byte values).
+        Example input: "ThisIsASecretKeyOf32CharsLength!"
+        Output: [84, 104, 105, ..., 33] (ASCII byte values)
         """
-        if len(key_string) != 64:
-            raise ValueError("AES-256 key must be a 64-character hexadecimal string.")
-        return [int(key_string[i:i+2], 16) for i in range(0, len(key_string), 2)]
+        if len(key_string) != 32:
+            raise ValueError("AES-256 key must be a 32-character ASCII string.")
+        return [ord(char) for char in key_string]
+
 
 # Example usage of the AES256KeyExpansion class
 def main():
-     # Example AES key string (256-bit)
-    key_string = "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
+   # Example AES key as an ASCII string (32 characters for AES-256)
+    ascii_key_string = "ThisIsASecretKeyOf32CharsLength!"
 
-    # Convert the string into an array of integers (byte values)
-    key_array = AES256KeyExpansion.convert_key_from_string(key_string)
+    # Convert the ASCII string into an array of byte values
+    key_array = AES256KeyExpansion.convert_key_from_ascii_string(ascii_key_string)
 
     # Initialize the AES-256 key expansion class with the converted key
     aes_expansion = AES256KeyExpansion(key_array)
