@@ -42,4 +42,4 @@ while True:
     print("Encryption complete. Sleeping for 1 second...")
 
     # Sleep for 1 second to prevent high CPU usage (adjust as needed)
-    time.sleep(1)
+    #time.sleep(1)
