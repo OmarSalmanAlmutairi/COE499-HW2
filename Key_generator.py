@@ -1,4 +1,4 @@
-class AES256KeyExpansion:
+class AESKeyExpansion:
     # AES constants for key expansion
     RCON = [
         0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36, 0x6C, 0xD8, 0xAB, 0x4D, 0x9A
@@ -26,8 +26,18 @@ class AES256KeyExpansion:
 
     def __init__(self, key):
         self.key = key
-        self.n_rounds = 14  # 14 rounds for AES-256
+        self.key_size = len(key) * 8  # Convert byte length to bits
+        self.n_rounds = self.get_number_of_rounds()
         self.round_keys = self.key_expansion()
+
+    # Determine the number of rounds based on the key size
+    def get_number_of_rounds(self):
+        if self.key_size == 128:
+            return 10
+        elif self.key_size == 256:
+            return 14
+        else:
+            raise ValueError("Unsupported key size. AES only supports 128-bit and 256-bit keys.")
 
     # Rotate word (left circular shift)
     @staticmethod
@@ -38,7 +48,7 @@ class AES256KeyExpansion:
     def sub_word(self, word):
         return [self.S_BOX[b] for b in word]
 
-    # Key expansion function for AES-256
+    # Key expansion function
     def key_expansion(self):
         expanded_keys = list(self.key)
         key_size = len(self.key)
@@ -69,33 +79,33 @@ class AES256KeyExpansion:
             f.write("AES Round Keys:\n")
             for i, round_key in enumerate(self.round_keys):
                 f.write(f"Round {i}: {''.join([f'{byte:02x}' for byte in round_key])}\n")
-                
+
+    @staticmethod
     def convert_key_from_ascii_string(key_string):
         """
         Converts an ASCII string AES key into an array of integers (byte values).
-        Example input: "ThisIsASecretKeyOf32CharsLength!"
-        Output: [84, 104, 105, ..., 33] (ASCII byte values)
         """
-        if len(key_string) != 32:
-            raise ValueError("AES-256 key must be a 32-character ASCII string.")
+        if len(key_string) not in [16, 32]:
+            raise ValueError("AES key must be a 16-character (128-bit) or 32-character (256-bit) ASCII string.")
         return [ord(char) for char in key_string]
 
 
-# Example usage of the AES256KeyExpansion class
+# Example usage of the AESKeyExpansion class
 def main():
-   # Example AES key as an ASCII string (32 characters for AES-256)
-    ascii_key_string = "ThisIsASecretKeyOf32CharsLength!"
+    # Example AES key as an ASCII string (16 characters for AES-128 or 32 characters for AES-256)
+    ascii_key_string = "ThisIsASecretKey"  # Example AES-128 key (16 chars) or "ThisIsASecretKeyOf32CharsLength!" for AES-256
 
     # Convert the ASCII string into an array of byte values
-    key_array = AES256KeyExpansion.convert_key_from_ascii_string(ascii_key_string)
+    key_array = AESKeyExpansion.convert_key_from_ascii_string(ascii_key_string)
 
-    # Initialize the AES-256 key expansion class with the converted key
-    aes_expansion = AES256KeyExpansion(key_array)
+    # Initialize the AES key expansion class with the converted key
+    aes_expansion = AESKeyExpansion(key_array)
 
     # Write the keys to a file
     aes_expansion.write_keys_to_file()
 
     print(f"AES Key and round keys have been generated and saved to aes_keys.txt.")
+
 
 if __name__ == "__main__":
     main()
