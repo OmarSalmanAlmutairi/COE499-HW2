@@ -2,7 +2,6 @@
 #include <openssl/rand.h>
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
-#include <openssl/evp.h>
 #include <iostream>
 #include <vector>
 #include <cstring>
@@ -13,13 +12,14 @@ std::vector<unsigned char> base64_decode(const std::string &base64_key) {
     int decodeLen = (int)((base64_key.size() * 3) / 4); // Estimate the length of the decoded data
     std::vector<unsigned char> decoded_key(decodeLen);
 
-    bio = BIO_new_mem_buf(base64_key.data(), -1);
-    b64 = BIO_new(BIO_f_base64());
+    bio = BIO_new_mem_buf(base64_key.data(), -1);  // Create a memory buffer with the Base64 string
+    b64 = BIO_new(BIO_f_base64());  // Create a Base64 BIO
+    BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);  // Do not use newlines to flush the buffer
     bio = BIO_push(b64, bio);
 
-    // Decode the Base64 key
+    // Decode the Base64 key into the decoded_key vector
     int decoded_size = BIO_read(bio, decoded_key.data(), base64_key.size());
-    decoded_key.resize(decoded_size); // Adjust size based on actual decoded size
+    decoded_key.resize(decoded_size);  // Resize vector to actual decoded size
 
     BIO_free_all(bio);
     return decoded_key;
